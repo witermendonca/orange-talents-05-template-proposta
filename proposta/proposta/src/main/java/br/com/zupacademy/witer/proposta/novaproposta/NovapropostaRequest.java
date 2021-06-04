@@ -44,6 +44,9 @@ public class NovapropostaRequest {
         this.salario = salario;
     }
 
+    public String getDocumento() {
+        return documento;
+    }
 
     public Proposta toModel() {
         return new Proposta(nome, email, documento, endereco,salario);

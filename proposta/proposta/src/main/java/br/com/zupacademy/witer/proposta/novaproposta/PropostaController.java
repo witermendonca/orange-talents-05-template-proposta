@@ -1,14 +1,18 @@
 package br.com.zupacademy.witer.proposta.novaproposta;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import javax.management.RuntimeErrorException;
 import javax.transaction.Transactional;
 import javax.validation.Valid;
+import java.util.Optional;
 
 @RestController
 public class PropostaController {
@@ -27,6 +31,12 @@ public class PropostaController {
 
         Proposta novaProposta = resquest.toModel();
 
+        Optional<Proposta> propostaExistenteDocumento = propostaRepository.findByDocumento(resquest.getDocumento());
+
+        if (propostaExistenteDocumento.isPresent()){
+            throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY,
+                    "Proposta já existente para esse documento");
+        }
         propostaRepository.save(novaProposta);
 
         return ResponseEntity.created(uriComponentsBuilder.path("/propostas/{id}")
@@ -34,7 +44,3 @@ public class PropostaController {
 
     }
 }
-//        Resultado Esperado
-//        A proposta deve estar armazenada no sistema, com um identificador gerado pelo sistema.
-//        Retornar 201 com Header Location preenchido com a URL da nova proposta em caso de sucesso.
-//        Retornar 400 quando violado alguma das restrições.
