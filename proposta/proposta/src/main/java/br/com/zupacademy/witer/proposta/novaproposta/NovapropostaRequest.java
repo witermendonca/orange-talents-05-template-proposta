@@ -7,6 +7,7 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Positive;
 import java.math.BigDecimal;
+import java.util.Optional;
 
 public class NovapropostaRequest {
 
@@ -44,12 +45,18 @@ public class NovapropostaRequest {
         this.salario = salario;
     }
 
-    public String getDocumento() {
-        return documento;
-    }
-
     public Proposta toModel() {
         return new Proposta(nome, email, documento, endereco,salario);
+    }
+
+    public boolean propostaExistenteParaDocumento(PropostaRepository repository){
+
+        Optional<Proposta> propostaExistenteDocumento = repository.findByDocumento(documento);
+
+        if (propostaExistenteDocumento.isPresent()){
+            return true;
+        }
+        return false;
     }
 
 
