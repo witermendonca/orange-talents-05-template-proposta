@@ -80,9 +80,11 @@ public class Proposta {
         return salario;
     }
 
-    public String getCartao() {
-        return cartao;
-    }
+    public String getCartao() { return cartao; }
+
+    public String getEmail() { return email; }
+
+    public String getEndereco() { return endereco; }
 
     public void setCartao(String cartao) {
         this.cartao = cartao;

@@ -18,6 +18,6 @@ public @interface IdExistente {
 
     String fieldName();
 
-    String message();
+    String message() default "Identificador não encontrado.";
 
 }

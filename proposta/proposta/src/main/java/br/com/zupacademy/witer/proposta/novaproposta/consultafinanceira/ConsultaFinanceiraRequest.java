@@ -15,7 +15,7 @@ public class ConsultaFinanceiraRequest {
     private String documento;
 
     @NotNull
-    @IdExistente(domainClass = Proposta.class, fieldName = "id", message = "Id de Proposta não encontrada")
+    @IdExistente(domainClass = Proposta.class, fieldName = "id")
     private Long idProposta;
 
     public ConsultaFinanceiraRequest(Proposta proposta) {

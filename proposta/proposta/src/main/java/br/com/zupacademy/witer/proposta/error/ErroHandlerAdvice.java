@@ -16,6 +16,8 @@ import java.util.List;
 @RestControllerAdvice
 public class ErroHandlerAdvice {
 
+
+    //Erros de Bean Validation é lançada a exceção MethodArgumentNotValidException.
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErroPadronizado> handle(MethodArgumentNotValidException methodArgumentNotValidException) {
         Collection<String> mensagens = new ArrayList<>();
