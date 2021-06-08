@@ -1,13 +1,21 @@
 package br.com.zupacademy.witer.proposta.novaproposta.consultafinanceira;
 
 import br.com.zupacademy.witer.proposta.novaproposta.Proposta;
+import br.com.zupacademy.witer.proposta.validators.IdExistente;
+
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 
 public class ConsultaFinanceiraRequest {
 
+    @NotBlank
     private String nome;
 
+    @NotBlank
     private String documento;
 
+    @NotNull
+    @IdExistente(domainClass = Proposta.class, fieldName = "id", message = "Id de Proposta não encontrada")
     private Long idProposta;
 
     public ConsultaFinanceiraRequest(Proposta proposta) {

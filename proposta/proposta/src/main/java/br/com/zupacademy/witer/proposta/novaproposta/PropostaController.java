@@ -1,6 +1,7 @@
 package br.com.zupacademy.witer.proposta.novaproposta;
 
 import br.com.zupacademy.witer.proposta.novaproposta.consultafinanceira.ConsultaFinanceiraRequest;
+import br.com.zupacademy.witer.proposta.novaproposta.consultafinanceira.ConsultaFinanceiraResponse;
 import br.com.zupacademy.witer.proposta.servicoexterno.apiconsultafinanceira.ApiConsultoraFinanceiraClient;
 import feign.FeignException;
 import org.slf4j.Logger;
@@ -44,10 +45,17 @@ public class PropostaController {
 
         Proposta novaProposta = resquest.toModel();
 
+        propostaRepository.save(novaProposta);
+
         StatusProposta statusProposta = null;
 
         try {
-            apiConsultoraFinanceiraClient.analisa(new ConsultaFinanceiraRequest(novaProposta));
+            ConsultaFinanceiraResponse consultaFinanceiraResponse = apiConsultoraFinanceiraClient.analisa(
+                    new ConsultaFinanceiraRequest(novaProposta));
+
+            logger.info("Proposta documento= {} Id= {} criada com sucesso! Com status= {}",
+                    consultaFinanceiraResponse.getDocumento(),
+                    consultaFinanceiraResponse.getIdProposta(), consultaFinanceiraResponse.getResultadoSolicitacao());
             statusProposta = StatusProposta.ELEGIVEL;
 
         }catch (FeignException e){
@@ -57,13 +65,10 @@ public class PropostaController {
                 throw new ResponseStatusException(HttpStatus.valueOf(e.status()), e.getMessage());
             }
         }
-
         novaProposta.setStatusProposta(statusProposta);
 
-        propostaRepository.save(novaProposta);
-
-        logger.info("Proposta documento= {} salário= {} criada com sucesso! Com status= {}", novaProposta.getDocumento(),
-                novaProposta.getSalario(), novaProposta.getStatusProposta());
+        logger.info("Proposta documento= {} Id= {} criada com sucesso! Com status= {}", novaProposta.getDocumento(),
+                novaProposta.getId(), novaProposta.getStatusProposta());
 
         return ResponseEntity.created(uriComponentsBuilder.path("/propostas/{id}")
                 .buildAndExpand(novaProposta.getId()).toUri()).body(novaProposta.getId());
