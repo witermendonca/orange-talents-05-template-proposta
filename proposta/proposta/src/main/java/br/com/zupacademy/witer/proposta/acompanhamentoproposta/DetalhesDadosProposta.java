@@ -3,9 +3,7 @@ package br.com.zupacademy.witer.proposta.acompanhamentoproposta;
 import br.com.zupacademy.witer.proposta.novaproposta.Proposta;
 import br.com.zupacademy.witer.proposta.novaproposta.StatusProposta;
 import br.com.zupacademy.witer.proposta.validators.CPFouCNPJ;
-import br.com.zupacademy.witer.proposta.validators.IdExistente;
 
-import javax.persistence.*;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;

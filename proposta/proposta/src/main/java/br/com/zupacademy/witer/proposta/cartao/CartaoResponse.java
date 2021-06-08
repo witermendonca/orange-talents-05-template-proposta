@@ -1,6 +1,5 @@
 package br.com.zupacademy.witer.proposta.cartao;
 
-import br.com.zupacademy.witer.proposta.novaproposta.Proposta;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
