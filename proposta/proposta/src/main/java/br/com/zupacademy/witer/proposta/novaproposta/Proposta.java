@@ -1,14 +1,18 @@
 package br.com.zupacademy.witer.proposta.novaproposta;
 
+import br.com.zupacademy.witer.proposta.cartao.Cartao;
 import br.com.zupacademy.witer.proposta.validators.CPFouCNPJ;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
+import javax.validation.Valid;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
@@ -19,85 +23,93 @@ import java.math.BigDecimal;
 @Table(name = "tb_proposta")
 public class Proposta {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long id;
 
-    //Nome não pode ser vazio ou nulo
-    @NotBlank
-    private String nome;
+	// Nome não pode ser vazio ou nulo
+	@NotBlank
+	private String nome;
 
-    //Email não pode ser vazio, nulo ou inválido
-    @NotBlank
-    @Email
-    private String email;
+	// Email não pode ser vazio, nulo ou inválido
+	@NotBlank
+	@Email
+	private String email;
 
-    //Documento do solicitante deve ser obrigatório e válido
-    //O documento necessário deve ser o CPF/CNPJ
-    @NotBlank
-    @CPFouCNPJ
-    private String documento;
+	// Documento do solicitante deve ser obrigatório e válido
+	// O documento necessário deve ser o CPF/CNPJ
+	@NotBlank
+	@CPFouCNPJ
+	private String documento;
 
-    //Endereço não pode ser vazio ou nulo
-    @NotBlank
-    private String endereco;
+	// Endereço não pode ser vazio ou nulo
+	@NotBlank
+	private String endereco;
 
-    //Salário bruto não pode ser vazio, nulo ou negativo
-    @NotNull
-    @Positive
-    private BigDecimal salario;
+	// Salário bruto não pode ser vazio, nulo ou negativo
+	@NotNull
+	@Positive
+	private BigDecimal salario;
 
-    @Enumerated(EnumType.STRING)
-    private StatusProposta statusProposta;
+	@Enumerated(EnumType.STRING)
+	private StatusProposta statusProposta;
 
-    private String cartao;
+	@Valid
+	@OneToOne(mappedBy = "proposta", cascade = { CascadeType.MERGE })
+	private Cartao cartao;
 
-    @Deprecated
-    public Proposta() {
-    }
+	@Deprecated
+	public Proposta() {
+	}
 
-    public Proposta(@NotBlank String nome, @NotBlank @Email String email, @NotBlank String documento,
-                    @NotBlank String endereco, @NotNull @Positive BigDecimal salario) {
-        this.nome = nome;
-        this.email = email;
-        this.documento = documento;
-        this.endereco = endereco;
-        this.salario = salario;
+	public Proposta(@NotBlank String nome, @NotBlank @Email String email, @NotBlank String documento,
+			@NotBlank String endereco, @NotNull @Positive BigDecimal salario) {
+		this.nome = nome;
+		this.email = email;
+		this.documento = documento;
+		this.endereco = endereco;
+		this.salario = salario;
 
-    }
+	}
 
-    public Long getId() {
-        return id;
-    }
+	public Long getId() {
+		return id;
+	}
 
-    public String getNome() {
-        return nome;
-    }
+	public String getNome() {
+		return nome;
+	}
 
-    public String getDocumento() {
-        return documento;
-    }
+	public String getDocumento() {
+		return documento;
+	}
 
-    public StatusProposta getStatusProposta() {
-        return statusProposta;
-    }
+	public StatusProposta getStatusProposta() {
+		return statusProposta;
+	}
 
-    public BigDecimal getSalario() {
-        return salario;
-    }
+	public BigDecimal getSalario() {
+		return salario;
+	}
 
-    public String getCartao() { return cartao; }
+	public Cartao getCartao() {
+		return cartao;
+	}
 
-    public String getEmail() { return email; }
+	public String getEmail() {
+		return email;
+	}
 
-    public String getEndereco() { return endereco; }
+	public String getEndereco() {
+		return endereco;
+	}
 
-    public void setCartao(String cartao) {
-        this.cartao = cartao;
-    }
+	public void setCartao(Cartao cartao) {
+		this.cartao = cartao;
+	}
 
-    public void setStatusProposta(StatusProposta statusProposta) {
-        this.statusProposta = statusProposta;
-    }
+	public void setStatusProposta(StatusProposta statusProposta) {
+		this.statusProposta = statusProposta;
+	}
 
 }

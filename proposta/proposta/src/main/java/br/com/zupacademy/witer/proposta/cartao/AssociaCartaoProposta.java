@@ -19,47 +19,53 @@ import java.util.List;
 @EnableScheduling
 public class AssociaCartaoProposta {
 
-    @Autowired
-    private PropostaRepository propostaRepository;
+	@Autowired
+	private PropostaRepository propostaRepository;
 
-    @Autowired
-    private ApiCartaoClient apiCartaoClient;
+	@Autowired
+	private CartaoRepository cartaoRepository;
 
-    private Logger logger = LogManager.getLogger(AssociaCartaoProposta.class);
+	@Autowired
+	private ApiCartaoClient apiCartaoClient;
 
-    @Scheduled(fixedDelay = 10000)
-    @Transactional
-    public void associaCartao () {
+	private Logger logger = LogManager.getLogger(AssociaCartaoProposta.class);
 
-        List<Proposta> propostasElegiveisSemCartao = propostaRepository.findByStatusPropostaAndCartaoIsNull(StatusProposta.ELEGIVEL);
+	@Scheduled(fixedDelay = 10000)
+	@Transactional
+	public void associaCartao() {
 
-        if(propostasElegiveisSemCartao.size() > 0) {
-            logger.info("Foram encontradas propostas elegiveis para associacao");
+		List<Proposta> propostasElegiveisSemCartao = propostaRepository
+				.findByStatusPropostaAndCartaoIsNull(StatusProposta.ELEGIVEL);
 
-            // associando as propostas aos cartoes disponiveis até o momento
-            propostasElegiveisSemCartao.forEach(proposta -> {
-                logger.info("Tentando associar Proposta Id={} documento={}", proposta.getId(), proposta.getDocumento());
-                associaCartaoAPropostaElegivel(proposta);
-            });
+		if (propostasElegiveisSemCartao.size() > 0) {
+			logger.info("Foram encontradas propostas elegiveis para associacao");
 
-        }else {
-            logger.info("Nenhuma proposta elegivel até o momento");
-        }
-    }
+			// associando as propostas aos cartoes disponiveis até o momento
+			propostasElegiveisSemCartao.forEach(proposta -> {
+				logger.info("Tentando associar Proposta Id={} documento={}", proposta.getId(), proposta.getDocumento());
+				associaCartaoAPropostaElegivel(proposta);
+			});
 
-    private void associaCartaoAPropostaElegivel(Proposta proposta) {
-        try {
-            CartaoResponse cartaoResponse = apiCartaoClient.buscaCartaoDaProposta(proposta.getId());
+		} else {
+			logger.info("Nenhuma proposta elegivel até o momento");
+		}
+	}
 
-            proposta.setCartao(cartaoResponse.getId());
-            propostaRepository.save(proposta);
+	private void associaCartaoAPropostaElegivel(Proposta proposta) {
+		try {
+			CartaoResponse cartaoResponse = apiCartaoClient.buscaCartaoDaProposta(proposta.getId());
+			Cartao cartao = cartaoResponse.toModel(proposta);
+			logger.info("Resposta cartao Id={} documento={}", cartaoResponse.getIdCartao(), cartaoResponse.getTitular());
+			cartaoRepository.save(cartao);
 
-            logger.info("Cartao id={} titular={} associado com sucesso a Proposta documento={} status={}",
-                    cartaoResponse.getId(), cartaoResponse.getTitular() ,proposta.getDocumento(), proposta.getStatusProposta());
-        }catch(FeignException e) {
-            logger.info("Nenhum Cartao encontrado para Proposta documento={} Id={}", proposta.getDocumento(), proposta.getId());
-        }
+			logger.info("Cartao id={} titular={} associado com sucesso a Proposta documento={} status={}",
+					cartaoResponse.getIdCartao(), cartaoResponse.getTitular(), proposta.getDocumento(),
+					proposta.getStatusProposta());
+		} catch (FeignException e) {
+			logger.info("Nenhum Cartao encontrado para Proposta documento={} Id={}", proposta.getDocumento(),
+					proposta.getId());
+		}
 
-    }
+	}
 
 }
