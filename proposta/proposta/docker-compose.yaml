@@ -134,7 +134,38 @@ services:
       VAULT_TOKEN: ee413645-dbe8-4848-afc6-6bb2768ada75
       VAULT_ADDR: http://127.0.0.1:8200
 
+  mysql:
+    image: mysql
+    container_name: mysql
+    volumes:
+      - mysql-volume:/var/lib/mysql
+    ports:
+      - 3306:3306
+        
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: db_proposta
+  
+  proposta:
+    build:
+      dockerfile: ./Dockerfile
+      context: .
+    container_name: proposta
+    ports:
+      - 8081:8080
+    restart: always
+    depends_on:
+      - mysql
+      - analise
+      - contas
+    environment:
+      CONSULTORA_FINANCEIRA_URL: http://analise:9999/api/solicitacao
+      CARTOES_URL: http://contas:8888/api/cartoes
+      MYSQL_URL: jdbc:mysql://mysql/db_proposta
+
 volumes:
   grafana-volume:
   prometheus-volume:
   postgres-volume:
+  mysql-volume:
+  proposta_volume:
