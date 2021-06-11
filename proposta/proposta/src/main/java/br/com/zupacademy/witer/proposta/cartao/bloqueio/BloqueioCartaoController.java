@@ -17,6 +17,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import br.com.zupacademy.witer.proposta.cartao.Cartao;
 import br.com.zupacademy.witer.proposta.cartao.CartaoRepository;
+import br.com.zupacademy.witer.proposta.cartao.StatusCartao;
 import br.com.zupacademy.witer.proposta.servicoexterno.apicartoes.ApiCartaoClient;
 import feign.FeignException;
 
@@ -39,18 +40,20 @@ public class BloqueioCartaoController {
 	public ResponseEntity<?> bloquearCartao(@PathVariable("idCartao") String idCartao,
 			HttpServletRequest httpServletRequest) {
 
+		// validando Cartao existente
 		Optional<Cartao> cartao = cartaoRepository.findByIdCartao(idCartao);
 		if (cartao.isEmpty()) {
 			logger.warn("Cartão não encontrado.");
 			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Cartão não encontrado.");
 		}
 
-		Optional<BloqueioCartao> cartaoBloqueado = bloqueioCartaoRepository.findByCartao(cartao.get());
-		if (cartaoBloqueado.isPresent() && cartaoBloqueado.get().getAtivo() == true) {
+		// validando Cartao desbloqueado
+		if (cartao.get().getStatusCartao() == StatusCartao.BLOQUEADO) {
 			logger.warn("Cartão já bloqueado.");
 			throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Cartão já bloqueado.");
 		}
 
+		// Notificando Sitema legado do Bloqueio
 		BloqueioCartaoRequest BloqueioCartaoRequest = new BloqueioCartaoRequest("api-propostas");
 		try {
 			String resultado = apiCartaoClient.notificaBloqueioCartao(cartao.get().getIdCartao(),
@@ -70,7 +73,7 @@ public class BloqueioCartaoController {
 		bloqueioCartaoRepository.save(bloqueiaCartao);
 		cartao.get().bloqueiaCartao(bloqueiaCartao);
 
-		return ResponseEntity.ok().body(useAgentClient);
+		return ResponseEntity.ok().build();
 	}
 
 }
