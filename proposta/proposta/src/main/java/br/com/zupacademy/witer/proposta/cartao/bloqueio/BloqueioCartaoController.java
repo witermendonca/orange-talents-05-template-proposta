@@ -17,6 +17,8 @@ import org.springframework.web.server.ResponseStatusException;
 
 import br.com.zupacademy.witer.proposta.cartao.Cartao;
 import br.com.zupacademy.witer.proposta.cartao.CartaoRepository;
+import br.com.zupacademy.witer.proposta.servicoexterno.apicartoes.ApiCartaoClient;
+import feign.FeignException;
 
 @RestController
 public class BloqueioCartaoController {
@@ -26,6 +28,9 @@ public class BloqueioCartaoController {
 
 	@Autowired
 	private BloqueioCartaoRepository bloqueioCartaoRepository;
+
+	@Autowired
+	private ApiCartaoClient apiCartaoClient;
 
 	private Logger logger = LogManager.getLogger(BloqueioCartaoController.class);
 
@@ -46,13 +51,26 @@ public class BloqueioCartaoController {
 			throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Cartão já bloqueado.");
 		}
 
+		BloqueioCartaoRequest BloqueioCartaoRequest = new BloqueioCartaoRequest("api-propostas");
+		try {
+			String resultado = apiCartaoClient.notificaBloqueioCartao(cartao.get().getIdCartao(),
+					BloqueioCartaoRequest);
+			logger.info("Resultado notificação API cartão: Cartão: " + resultado);
+		} catch (FeignException e) {
+			logger.error("Erro na notificação do bloqueio do cartão a API externa.");
+			throw new ResponseStatusException(HttpStatus.valueOf(e.status()), "Erro no Bloqueio do cartão.");
+		}
+
 		// Retorna o User-Agent do Header da solicitação.
 		String useAgentClient = httpServletRequest.getHeader("User-Agent");
 		// Retorna uma string contendo o endereço IP do cliente que enviou a solicitação
 		String ipClint = httpServletRequest.getRemoteAddr();
 
-		bloqueioCartaoRepository.save(new BloqueioCartao(ipClint, useAgentClient, cartao.get(), true));
+		BloqueioCartao bloqueiaCartao = new BloqueioCartao(ipClint, useAgentClient, cartao.get(), true);
+		bloqueioCartaoRepository.save(bloqueiaCartao);
+		cartao.get().bloqueiaCartao(bloqueiaCartao);
 
 		return ResponseEntity.ok().body(useAgentClient);
 	}
+
 }

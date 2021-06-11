@@ -1,6 +1,7 @@
 package br.com.zupacademy.witer.proposta.acompanhamentoproposta;
 
 import br.com.zupacademy.witer.proposta.cartao.Cartao;
+import br.com.zupacademy.witer.proposta.cartao.StatusCartao;
 import br.com.zupacademy.witer.proposta.novaproposta.Proposta;
 import br.com.zupacademy.witer.proposta.novaproposta.StatusProposta;
 import br.com.zupacademy.witer.proposta.validators.CPFouCNPJ;
@@ -39,6 +40,8 @@ public class DetalhesDadosProposta {
 
 	private Cartao identificadorCartao;
 
+	private StatusCartao statusCartao;
+
 	public DetalhesDadosProposta(Proposta proposta) {
 		this.id = proposta.getId();
 		this.nome = proposta.getNome();
@@ -48,6 +51,7 @@ public class DetalhesDadosProposta {
 		this.salario = proposta.getSalario();
 		this.statusProposta = proposta.getStatusProposta();
 		this.identificadorCartao = proposta.getCartao();
+		this.statusCartao = proposta.getCartao().getStatusCartao();
 	}
 
 	public Long getId() {
@@ -84,4 +88,9 @@ public class DetalhesDadosProposta {
 		}
 		return identificadorCartao.getIdCartao();
 	}
+
+	public StatusCartao getStatusCartao() {
+		return statusCartao;
+	}
+
 }

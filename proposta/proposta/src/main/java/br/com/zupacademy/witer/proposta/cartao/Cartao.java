@@ -3,6 +3,8 @@ package br.com.zupacademy.witer.proposta.cartao;
 import java.time.LocalDateTime;
 
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -13,6 +15,7 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
+import br.com.zupacademy.witer.proposta.cartao.bloqueio.BloqueioCartao;
 import br.com.zupacademy.witer.proposta.novaproposta.Proposta;
 
 @Entity
@@ -39,6 +42,10 @@ public class Cartao {
 	@Valid
 	@OneToOne(fetch = FetchType.LAZY)
 	private Proposta proposta;
+
+	@NotNull
+	@Enumerated(EnumType.STRING)
+	private StatusCartao statusCartao = StatusCartao.DESBLOQUEADO;
 
 	@Deprecated
 	public Cartao() {
@@ -72,6 +79,20 @@ public class Cartao {
 
 	public Proposta getProposta() {
 		return proposta;
+	}
+
+	public StatusCartao getStatusCartao() {
+		return statusCartao;
+	}
+
+	public void bloqueiaCartao(BloqueioCartao bloqueioCartao) {
+
+		if (bloqueioCartao.getAtivo() == true) {
+			this.statusCartao = StatusCartao.BLOQUEADO;
+		} else {
+			this.statusCartao = StatusCartao.DESBLOQUEADO;
+		}
+
 	}
 
 }
