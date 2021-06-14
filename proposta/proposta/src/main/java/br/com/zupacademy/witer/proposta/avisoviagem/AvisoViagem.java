@@ -51,18 +51,4 @@ public class AvisoViagem {
         this.userAgentClient = userAgentClient;
         this.cartao = cartao;
     }
-
-    @Override
-    public String toString() {
-        return "AvisoViagem{" +
-                "id=" + id +
-                ", dataAvisoViagem=" + dataAvisoViagem +
-                ", destino='" + destino + '\'' +
-                ", dataTerminoViagem=" + dataTerminoViagem +
-                ", ipClient='" + ipClient + '\'' +
-                ", userAgentClient='" + userAgentClient + '\'' +
-                ", cartao=" + cartao.getIdCartao() +
-                '}';
-    }
-
 }

@@ -2,6 +2,8 @@ package br.com.zupacademy.witer.proposta.avisoviagem;
 
 import br.com.zupacademy.witer.proposta.cartao.Cartao;
 import br.com.zupacademy.witer.proposta.cartao.CartaoRepository;
+import br.com.zupacademy.witer.proposta.servicoexterno.apicartoes.ApiCartaoClient;
+import feign.FeignException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,11 +25,14 @@ public class AvisoViagemController {
 
     private CartaoRepository cartaoRepository;
     private AvisoViagemRepository avisoViagemRepository;
+    private ApiCartaoClient apiCartaoClient;
 
     @Autowired
-    public AvisoViagemController(CartaoRepository cartaoRepository, AvisoViagemRepository avisoViagemRepository) {
+    public AvisoViagemController(CartaoRepository cartaoRepository, AvisoViagemRepository avisoViagemRepository,
+                                 ApiCartaoClient apiCartaoClient) {
         this.cartaoRepository = cartaoRepository;
         this.avisoViagemRepository = avisoViagemRepository;
+        this.apiCartaoClient = apiCartaoClient;
     }
 
     private Logger logger = LogManager.getLogger(AvisoViagemController.class);
@@ -45,6 +50,14 @@ public class AvisoViagemController {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Cartão não encontrado.");
         }
 
+        // Notificando Sitema legado sobre aviso de viagem.
+        try {
+            String resultado = apiCartaoClient.notificaAvisoViagem(cartao.get().getIdCartao(),request);
+            logger.info("Resultado notificação de aviso de viagem API externa: " + resultado);
+        } catch (FeignException e) {
+            logger.error("Erro na notificação do aviso de viagem à API externa.");
+            throw new ResponseStatusException(HttpStatus.valueOf(e.status()), "Erro no aviso de viagem à API de cartões.");
+        }
         // Retorna o User-Agent do Header da solicitação.
         String useAgentClient = httpServletRequest.getHeader("User-Agent");
         // Retorna uma string contendo o endereço IP do cliente que enviou a solicitação
@@ -54,6 +67,6 @@ public class AvisoViagemController {
         avisoViagemRepository.save(novoAvisoViagem);
         logger.info("Aviso de viagem criada com sucesso.");
 
-        return ResponseEntity.ok().body(novoAvisoViagem.toString());
+        return ResponseEntity.ok().build();
     }
 }

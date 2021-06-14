@@ -1,5 +1,6 @@
 package br.com.zupacademy.witer.proposta.servicoexterno.apicartoes;
 
+import br.com.zupacademy.witer.proposta.avisoviagem.AvisoViagemRequest;
 import br.com.zupacademy.witer.proposta.cartao.CartaoResponse;
 import br.com.zupacademy.witer.proposta.cartao.bloqueio.BloqueioCartaoRequest;
 
@@ -17,4 +18,7 @@ public interface ApiCartaoClient {
 
 	@RequestMapping(method = RequestMethod.POST, path = "/{idCartao}/bloqueios")
 	String notificaBloqueioCartao(@PathVariable("idCartao") String idCartao, BloqueioCartaoRequest request);
+
+	@RequestMapping(method = RequestMethod.POST, path = "/{idCartao}/avisos")
+	String notificaAvisoViagem(@PathVariable("idCartao") String idCartao, AvisoViagemRequest request);
 }
