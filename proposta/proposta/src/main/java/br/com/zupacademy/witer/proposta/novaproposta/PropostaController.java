@@ -1,5 +1,6 @@
 package br.com.zupacademy.witer.proposta.novaproposta;
 
+import br.com.zupacademy.witer.proposta.config.metrica.MetricasProposta;
 import br.com.zupacademy.witer.proposta.novaproposta.consultafinanceira.ConsultaFinanceiraRequest;
 import br.com.zupacademy.witer.proposta.novaproposta.consultafinanceira.ConsultaFinanceiraResponse;
 import br.com.zupacademy.witer.proposta.servicoexterno.apiconsultafinanceira.ApiConsultoraFinanceiraClient;
@@ -21,57 +22,58 @@ import javax.validation.Valid;
 @RestController
 public class PropostaController {
 
-    private final Logger logger = LoggerFactory.getLogger(PropostaController.class);
+	private final Logger logger = LoggerFactory.getLogger(PropostaController.class);
 
-    private PropostaRepository propostaRepository;
+	@Autowired
+	private PropostaRepository propostaRepository;
 
-    @Autowired
-    public PropostaController(PropostaRepository propostaRepository) {
-        this.propostaRepository = propostaRepository;
-    }
+	@Autowired
+	private ApiConsultoraFinanceiraClient apiConsultoraFinanceiraClient;
 
-    @Autowired
-    private ApiConsultoraFinanceiraClient apiConsultoraFinanceiraClient;
+	@Autowired
+	private MetricasProposta metricasProposta;
 
-    @PostMapping("/propostas")
-    @Transactional
-    public ResponseEntity<?> criarProposta(@RequestBody @Valid NovapropostaRequest resquest,
-                                           UriComponentsBuilder uriComponentsBuilder){
+	@PostMapping("/propostas")
+	@Transactional
+	public ResponseEntity<?> criarProposta(@RequestBody @Valid NovapropostaRequest resquest,
+			UriComponentsBuilder uriComponentsBuilder) {
 
-        if (resquest.propostaExistenteParaDocumento(propostaRepository)){
-            throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY,
-                    "Proposta já existente para esse documento");
-        }
+		// Validando proposta existente para o documento informado.
+		if (resquest.propostaExistenteParaDocumento(propostaRepository)) {
+			throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY,
+					"Proposta já existente para esse documento");
+		}
 
-        Proposta novaProposta = resquest.toModel();
+		// Convertendo Proposta request e persistindo novaProposta.
+		Proposta novaProposta = resquest.toModel();
+		propostaRepository.save(novaProposta);
 
-        propostaRepository.save(novaProposta);
+		StatusProposta statusProposta = null;
+		try {
+			ConsultaFinanceiraResponse consultaFinanceiraResponse = apiConsultoraFinanceiraClient
+					.analisa(new ConsultaFinanceiraRequest(novaProposta));
 
-        StatusProposta statusProposta = null;
+			logger.info("Proposta Id= {} criada com sucesso! Com status= {}",
+					consultaFinanceiraResponse.getIdProposta(), consultaFinanceiraResponse.getResultadoSolicitacao());
+			statusProposta = StatusProposta.ELEGIVEL;
 
-        try {
-            ConsultaFinanceiraResponse consultaFinanceiraResponse = apiConsultoraFinanceiraClient.analisa(
-                    new ConsultaFinanceiraRequest(novaProposta));
+		} catch (FeignException e) {
+			if (e.status() == 422) {
+				statusProposta = StatusProposta.NAO_ELEGIVEL;
+			} else {
+				throw new ResponseStatusException(HttpStatus.valueOf(e.status()), e.getMessage());
+			}
+		}
+		novaProposta.setStatusProposta(statusProposta);
 
-            logger.info("Proposta documento= {} Id= {} criada com sucesso! Com status= {}",
-                    consultaFinanceiraResponse.getDocumento(),
-                    consultaFinanceiraResponse.getIdProposta(), consultaFinanceiraResponse.getResultadoSolicitacao());
-            statusProposta = StatusProposta.ELEGIVEL;
+		logger.info("Proposta Id= {} criada com sucesso! Com status= {}", novaProposta.getId(),
+				novaProposta.getStatusProposta());
 
-        }catch (FeignException e){
-            if (e.status() == 422){
-                statusProposta = StatusProposta.NAO_ELEGIVEL;
-            }else{
-                throw new ResponseStatusException(HttpStatus.valueOf(e.status()), e.getMessage());
-            }
-        }
-        novaProposta.setStatusProposta(statusProposta);
+		metricasProposta.incrementaContadorPropostaCriada(); // incremento a metrica de propostas criada com sucesso
 
-        logger.info("Proposta documento= {} Id= {} criada com sucesso! Com status= {}", novaProposta.getDocumento(),
-                novaProposta.getId(), novaProposta.getStatusProposta());
+		return ResponseEntity
+				.created(uriComponentsBuilder.path("/propostas/{id}").buildAndExpand(novaProposta.getId()).toUri())
+				.body(novaProposta.getId());
 
-        return ResponseEntity.created(uriComponentsBuilder.path("/propostas/{id}")
-                .buildAndExpand(novaProposta.getId()).toUri()).body(novaProposta.getId());
-
-    }
+	}
 }

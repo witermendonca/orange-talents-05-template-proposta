@@ -40,8 +40,6 @@ public class DetalhesDadosProposta {
 
 	private Cartao identificadorCartao;
 
-	private StatusCartao statusCartao;
-
 	public DetalhesDadosProposta(Proposta proposta) {
 		this.id = proposta.getId();
 		this.nome = proposta.getNome();
@@ -51,7 +49,6 @@ public class DetalhesDadosProposta {
 		this.salario = proposta.getSalario();
 		this.statusProposta = proposta.getStatusProposta();
 		this.identificadorCartao = proposta.getCartao();
-		this.statusCartao = proposta.getCartao().getStatusCartao();
 	}
 
 	public Long getId() {
@@ -90,7 +87,10 @@ public class DetalhesDadosProposta {
 	}
 
 	public StatusCartao getStatusCartao() {
-		return statusCartao;
+		if (identificadorCartao == null) {
+			return null;
+		}
+		return identificadorCartao.getStatusCartao();
 	}
 
 }
