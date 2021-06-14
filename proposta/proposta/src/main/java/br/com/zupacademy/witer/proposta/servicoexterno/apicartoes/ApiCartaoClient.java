@@ -4,6 +4,8 @@ import br.com.zupacademy.witer.proposta.avisoviagem.AvisoViagemRequest;
 import br.com.zupacademy.witer.proposta.cartao.CartaoResponse;
 import br.com.zupacademy.witer.proposta.cartao.bloqueio.BloqueioCartaoRequest;
 
+import br.com.zupacademy.witer.proposta.carteira.CarteiraRequest;
+import br.com.zupacademy.witer.proposta.carteira.CarteiraResponse;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -21,4 +23,8 @@ public interface ApiCartaoClient {
 
 	@RequestMapping(method = RequestMethod.POST, path = "/{idCartao}/avisos")
 	String notificaAvisoViagem(@PathVariable("idCartao") String idCartao, AvisoViagemRequest request);
+
+	@RequestMapping(method = RequestMethod.POST, path = "/{idCartao}/carteiras")
+	CarteiraResponse associaCarteiraAoCartao(@PathVariable("idCartao") String idCartao, CarteiraRequest request);
+
 }
