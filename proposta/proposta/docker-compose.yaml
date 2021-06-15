@@ -110,6 +110,7 @@ services:
   prometheus:
     image: prom/prometheus
     volumes:
+     - ./prometheus.yml:/etc/prometheus/prometheus.yml
      - prometheus-volume:/etc/prometheus/
     network_mode: bridge
     ports:
@@ -153,7 +154,6 @@ services:
     container_name: proposta
     ports:
       - 8081:8080
-    restart: always
     depends_on:
       - mysql
       - analise
