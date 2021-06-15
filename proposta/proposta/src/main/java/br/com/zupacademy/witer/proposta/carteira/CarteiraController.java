@@ -64,7 +64,7 @@ public class CarteiraController {
             carteiraRepository.save(carteira);
             logger.info("Carteira {} criada com sucesso.", carteira.getTipoCarteira());
             return ResponseEntity.created(uriComponentsBuilder.path("/carteiras/{id}").
-                    buildAndExpand(carteira.getId()).toUri()).body(carteira.toString());
+                    buildAndExpand(carteira.getId()).toUri()).build();
 
         } catch (FeignException e) {
             logger.error("Erro na associação da carteira à API externa.");
