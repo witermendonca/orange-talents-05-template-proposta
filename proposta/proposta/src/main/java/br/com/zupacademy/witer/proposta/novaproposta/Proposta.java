@@ -1,7 +1,7 @@
 package br.com.zupacademy.witer.proposta.novaproposta;
 
 import br.com.zupacademy.witer.proposta.cartao.Cartao;
-import br.com.zupacademy.witer.proposta.validators.CPFouCNPJ;
+import br.com.zupacademy.witer.proposta.validators.EncryptDecrypt;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
@@ -39,7 +39,6 @@ public class Proposta {
 	// Documento do solicitante deve ser obrigatório e válido
 	// O documento necessário deve ser o CPF/CNPJ
 	@NotBlank
-	@CPFouCNPJ
 	private String documento;
 
 	// Endereço não pode ser vazio ou nulo
@@ -66,7 +65,7 @@ public class Proposta {
 			@NotBlank String endereco, @NotNull @Positive BigDecimal salario) {
 		this.nome = nome;
 		this.email = email;
-		this.documento = documento;
+		this.documento = EncryptDecrypt.encryption(documento);
 		this.endereco = endereco;
 		this.salario = salario;
 

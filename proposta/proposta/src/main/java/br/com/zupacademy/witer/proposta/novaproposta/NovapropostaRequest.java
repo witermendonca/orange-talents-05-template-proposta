@@ -1,6 +1,7 @@
 package br.com.zupacademy.witer.proposta.novaproposta;
 
 import br.com.zupacademy.witer.proposta.validators.CPFouCNPJ;
+import br.com.zupacademy.witer.proposta.validators.EncryptDecrypt;
 
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
@@ -51,7 +52,8 @@ public class NovapropostaRequest {
 
     public boolean propostaExistenteParaDocumento(PropostaRepository repository){
 
-        Optional<Proposta> propostaExistenteDocumento = repository.findByDocumento(documento);
+        String documentoCriptografado = EncryptDecrypt.encryption(documento);
+        Optional<Proposta> propostaExistenteDocumento = repository.findByDocumento(documentoCriptografado);
 
         if (propostaExistenteDocumento.isPresent()){
             return true;
