@@ -15,7 +15,7 @@ public class HealthCheck implements HealthIndicator {
     public Health health() {
         Map<String, Object> details = new HashMap<>();
         details.put("versão", "1.2.3");
-        details.put("descrição", "Meu primeiro Health Check customizado!");
+        details.put("descrição", "API Propostas.");
 
         return Health.status(Status.UP).withDetails(details).build();
     }

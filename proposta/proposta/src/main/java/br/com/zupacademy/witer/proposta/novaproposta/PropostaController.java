@@ -22,16 +22,22 @@ import javax.validation.Valid;
 @RestController
 public class PropostaController {
 
-	private final Logger logger = LoggerFactory.getLogger(PropostaController.class);
-
-	@Autowired
 	private PropostaRepository propostaRepository;
 
-	@Autowired
 	private ApiConsultoraFinanceiraClient apiConsultoraFinanceiraClient;
 
-	@Autowired
 	private MetricasProposta metricasProposta;
+
+	@Autowired
+	public PropostaController(PropostaRepository propostaRepository,
+			ApiConsultoraFinanceiraClient apiConsultoraFinanceiraClient, MetricasProposta metricasProposta) {
+		super();
+		this.propostaRepository = propostaRepository;
+		this.apiConsultoraFinanceiraClient = apiConsultoraFinanceiraClient;
+		this.metricasProposta = metricasProposta;
+	}
+
+	private final Logger logger = LoggerFactory.getLogger(PropostaController.class);
 
 	@PostMapping("/propostas")
 	@Transactional
@@ -40,8 +46,9 @@ public class PropostaController {
 
 		// Validando proposta existente para o documento informado.
 		if (resquest.propostaExistenteParaDocumento(propostaRepository)) {
+			logger.warn("Proposta já existente para o documento informado.");
 			throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY,
-					"Proposta já existente para esse documento");
+					"Proposta já existente para o documento informado.");
 		}
 
 		// Convertendo Proposta request e persistindo novaProposta.
@@ -53,20 +60,22 @@ public class PropostaController {
 			ConsultaFinanceiraResponse consultaFinanceiraResponse = apiConsultoraFinanceiraClient
 					.analisa(new ConsultaFinanceiraRequest(novaProposta));
 
-			logger.info("Proposta Id= {} criada com sucesso! Com status= {}",
-					consultaFinanceiraResponse.getIdProposta(), consultaFinanceiraResponse.getResultadoSolicitacao());
+			logger.info("Proposta Id {} criada com sucesso! Com status {}", consultaFinanceiraResponse.getIdProposta(),
+					consultaFinanceiraResponse.getResultadoSolicitacao());
 			statusProposta = StatusProposta.ELEGIVEL;
 
 		} catch (FeignException e) {
 			if (e.status() == 422) {
 				statusProposta = StatusProposta.NAO_ELEGIVEL;
 			} else {
-				throw new ResponseStatusException(HttpStatus.valueOf(e.status()), e.getMessage());
+				logger.error("Erro na solicitação de analise financeira da proposta.");
+				throw new ResponseStatusException(HttpStatus.valueOf(e.status()),
+						"Erro na solicitação de analise financeira da proposta.");
 			}
 		}
 		novaProposta.setStatusProposta(statusProposta);
 
-		logger.info("Proposta Id= {} criada com sucesso! Com status= {}", novaProposta.getId(),
+		logger.info("Proposta Id {} criada com sucesso! Com status {}", novaProposta.getId(),
 				novaProposta.getStatusProposta());
 
 		metricasProposta.incrementaContadorPropostaCriada(); // incremento a metrica de propostas criada com sucesso

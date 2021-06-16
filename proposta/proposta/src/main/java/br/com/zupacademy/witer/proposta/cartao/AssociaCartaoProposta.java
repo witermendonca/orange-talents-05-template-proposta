@@ -19,14 +19,19 @@ import java.util.List;
 @EnableScheduling
 public class AssociaCartaoProposta {
 
-	@Autowired
 	private PropostaRepository propostaRepository;
 
-	@Autowired
 	private CartaoRepository cartaoRepository;
 
-	@Autowired
 	private ApiCartaoClient apiCartaoClient;
+
+	@Autowired
+	public AssociaCartaoProposta(PropostaRepository propostaRepository, CartaoRepository cartaoRepository,
+			ApiCartaoClient apiCartaoClient) {
+		this.propostaRepository = propostaRepository;
+		this.cartaoRepository = cartaoRepository;
+		this.apiCartaoClient = apiCartaoClient;
+	}
 
 	private Logger logger = LogManager.getLogger(AssociaCartaoProposta.class);
 
@@ -42,7 +47,7 @@ public class AssociaCartaoProposta {
 
 			// associando as propostas aos cartoes disponiveis até o momento
 			propostasElegiveisSemCartao.forEach(proposta -> {
-				logger.info("Tentando associar Proposta Id={} documento={}", proposta.getId(), proposta.getDocumento());
+				logger.info("Tentando associar Proposta Id {}", proposta.getId());
 				associaCartaoAPropostaElegivel(proposta);
 			});
 
@@ -55,15 +60,13 @@ public class AssociaCartaoProposta {
 		try {
 			CartaoResponse cartaoResponse = apiCartaoClient.buscaCartaoDaProposta(proposta.getId());
 			Cartao cartao = cartaoResponse.toModel(proposta);
-			logger.info("Resposta cartao Id={} documento={}", cartaoResponse.getIdCartao(), cartaoResponse.getTitular());
+			logger.info("Resposta cartao Id {} titular {}", cartaoResponse.getIdCartao(), cartaoResponse.getTitular());
 			cartaoRepository.save(cartao);
 
-			logger.info("Cartao id={} titular={} associado com sucesso a Proposta documento={} status={}",
-					cartaoResponse.getIdCartao(), cartaoResponse.getTitular(), proposta.getDocumento(),
-					proposta.getStatusProposta());
+			logger.info("Cartao Id {} associado com sucesso a Proposta Id {} status {}", cartaoResponse.getIdCartao(),
+					cartaoResponse.getTitular(), proposta.getId(), proposta.getStatusProposta());
 		} catch (FeignException e) {
-			logger.info("Nenhum Cartao encontrado para Proposta documento={} Id={}", proposta.getDocumento(),
-					proposta.getId());
+			logger.error("Nenhum Cartao encontrado para Proposta Id {}", proposta.getId());
 		}
 
 	}

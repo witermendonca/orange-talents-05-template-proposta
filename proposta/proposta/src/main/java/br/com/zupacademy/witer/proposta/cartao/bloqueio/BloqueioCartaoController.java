@@ -24,14 +24,19 @@ import feign.FeignException;
 @RestController
 public class BloqueioCartaoController {
 
-	@Autowired
 	private CartaoRepository cartaoRepository;
 
-	@Autowired
 	private BloqueioCartaoRepository bloqueioCartaoRepository;
 
-	@Autowired
 	private ApiCartaoClient apiCartaoClient;
+
+	@Autowired
+	public BloqueioCartaoController(CartaoRepository cartaoRepository,
+			BloqueioCartaoRepository bloqueioCartaoRepository, ApiCartaoClient apiCartaoClient) {
+		this.cartaoRepository = cartaoRepository;
+		this.bloqueioCartaoRepository = bloqueioCartaoRepository;
+		this.apiCartaoClient = apiCartaoClient;
+	}
 
 	private Logger logger = LogManager.getLogger(BloqueioCartaoController.class);
 
@@ -72,7 +77,8 @@ public class BloqueioCartaoController {
 		BloqueioCartao bloqueiaCartao = new BloqueioCartao(ipClint, useAgentClient, cartao.get(), true);
 		bloqueioCartaoRepository.save(bloqueiaCartao);
 		cartao.get().bloqueiaCartao(bloqueiaCartao);
-
+		
+		logger.info("Bloqueio de cartão realizado com sucesso.");
 		return ResponseEntity.ok().build();
 	}
 

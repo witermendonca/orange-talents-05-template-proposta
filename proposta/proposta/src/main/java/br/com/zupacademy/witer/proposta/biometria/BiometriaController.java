@@ -23,11 +23,15 @@ import br.com.zupacademy.witer.proposta.cartao.CartaoRepository;
 @RestController
 public class BiometriaController {
 
-	@Autowired
+
 	private CartaoRepository cartaoRepository;
+	private BiometriaRepository biometriaRepository;
 
 	@Autowired
-	private BiometriaRepository biometriaRepository;
+	public BiometriaController(CartaoRepository cartaoRepository, BiometriaRepository biometriaRepository) {
+		this.cartaoRepository = cartaoRepository;
+		this.biometriaRepository = biometriaRepository;
+	}
 
 	private Logger logger = LogManager.getLogger(BiometriaController.class);
 
@@ -42,6 +46,8 @@ public class BiometriaController {
 
 				Biometria novaBiometria = request.toModel(cartao.get());
 				biometriaRepository.save(novaBiometria);
+				
+				logger.info("Biometria cadatrada com sucesso.");
 				return ResponseEntity.created(
 						uriComponentsBuilder.path("/biometrias/{id}").buildAndExpand(novaBiometria.getId()).toUri())
 						.build();
